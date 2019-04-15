@@ -122,6 +122,68 @@ user_model = UsersModel(db.get_connection())
 user_model.init_table()
 
 
+# главная страница сортировка по дате от max к min
+@app.route('/')
+@app.route('/index')
+def index():
+    recipes = RecipesModel(db.get_connection()).get_all()
+    admin = 'rusgal000@gmail.com'
+    if len(recipes) != 0:
+        recipes = sorted(recipes, key=lambda tup: tup[6], reverse=True)
+    return render_template('index.html',
+                           recipes=recipes, admin=admin)
+
+
+# главная страница сортировка по дате от min к max
+@app.route('/index_false')
+def index_false():
+    recipes = RecipesModel(db.get_connection()).get_all()
+    admin = 'rusgal000@gmail.com'
+    if len(recipes) != 0:
+        recipes = sorted(recipes, key=lambda tup: tup[6], reverse=False)
+    return render_template('index.html',
+                           recipes=recipes, admin=admin)
+
+
+# главная страница сортировка по названию от А до Я
+@app.route('/index_name_true')
+def index_name_true():
+    admin = 'rusgal000@gmail.com'
+    recipes = RecipesModel(db.get_connection()).get_all()
+    if len(recipes) != 0:
+        recipes = sorted(recipes, key=lambda tup: tup[1], reverse=True)
+    return render_template('index.html', recipes=recipes, admin=admin)
+
+
+# главная страница сортировка по названию от Я до А
+@app.route('/index_name_false')
+def index_name_false():
+    admin = 'rusgal000@gmail.com'
+    recipes = RecipesModel(db.get_connection()).get_all()
+    if len(recipes) != 0:
+        recipes = sorted(recipes, key=lambda tup: tup[1], reverse=False)
+    return render_template('index.html', recipes=recipes, admin=admin)
+
+
+# главная страница сортировка по сложности рецеты от min к max
+@app.route('/index_hard_true')
+def index_hard_true():
+    admin = 'rusgal000@gmail.com'
+    recipes = RecipesModel(db.get_connection()).get_all()
+    if len(recipes) != 0:
+        recipes = sorted(recipes, key=lambda tup: tup[5], reverse=True)
+    return render_template('index.html', recipes=recipes, admin=admin)
+
+
+# главная страница сортировка по сложности рецеты от max к min
+@app.route('/index_hard_false')
+def index_hard_false():
+    admin = 'rusgal000@gmail.com'
+    recipes = RecipesModel(db.get_connection()).get_all()
+    if len(recipes) != 0:
+        recipes = sorted(recipes, key=lambda tup: tup[5], reverse=False)
+    return render_template('index.html', recipes=recipes, admin=admin)
+
 
 # авторизация
 @app.route('/login', methods=['GET', 'POST'])
@@ -162,6 +224,10 @@ def add_recipe():
         if title != '' and content != '' and ingrid != '':
             # охранение картинки рецепта
             if request.files.get('file', None):
+                #f = request.files['file']
+                #with open(f.filename, "wb") as file:
+                    #file.write(f.read())
+
                 where = 'static/for_users/' + request.files['file'].filename
                 print(where)
                 request.files['file'].save(where)
@@ -169,7 +235,7 @@ def add_recipe():
                 # если не все поля заполнены
                 return render_template('not_enough.html')
             recipes = RecipesModel(db.get_connection())
-            recipes.insert(title, content, ingrid, hard, session['user_id'])
+            recipes.insert(title, content, ingrid, hard, where, session['user_id'])
             return redirect("/index")
         return render_template('not_enough.html')
 
